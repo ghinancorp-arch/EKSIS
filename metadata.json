@@ -1,0 +1,6 @@
+{
+  "name": "EKSIS (Ekosistem Bisnis Syariah)",
+  "description": "Platform ekosistem bisnis syariah yang menghubungkan Produsen, Reseller, Pemodal Crowdfunding, dan Pembeli serta fitur Donasi Tabungan Akhirat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
