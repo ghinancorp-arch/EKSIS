@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Product } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { formatRupiah, generateWhatsAppShareText } from '../../utils/formatters';
+import { openExternalUrl, nativeShare } from '../../utils/capacitorBridge';
 import {
   X,
   Calculator,
@@ -95,7 +96,22 @@ export const ProductMarginModal: React.FC<ProductMarginModalProps> = ({
       shareableProductUrl
     );
     const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, '_blank');
+    openExternalUrl(waUrl);
+  };
+
+  const handleNativeShare = async () => {
+    recordShareClick(product.id, 'native_share');
+    await nativeShare({
+      title: product.name,
+      text: generateWhatsAppShareText(
+        product.name,
+        sellingPrice,
+        caption || product.description,
+        shareableProductUrl
+      ),
+      url: shareableProductUrl,
+      dialogTitle: `Bagikan ${product.name}`,
+    });
   };
 
   const handleCopyLink = () => {
@@ -121,7 +137,7 @@ export const ProductMarginModal: React.FC<ProductMarginModalProps> = ({
       alert(`Link produk telah disalin! Buka ${platform} dan tempel (paste) link di bio atau story Anda.`);
       return;
     }
-    window.open(shareUrl, '_blank');
+    openExternalUrl(shareUrl);
   };
 
   return (
@@ -289,17 +305,27 @@ export const ProductMarginModal: React.FC<ProductMarginModalProps> = ({
           </h4>
 
           {/* Referral Link Box */}
-          <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200 mb-3">
-            <span className="text-[11px] text-slate-600 truncate flex-1 font-mono">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200 mb-3">
+            <span className="text-[11px] text-slate-600 truncate flex-1 font-mono px-1">
               {shareableProductUrl}
             </span>
-            <button
-              onClick={handleCopyLink}
-              className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
-            >
-              {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-              <span>{copied ? 'Tersalin' : 'Copy Link'}</span>
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={handleNativeShare}
+                className="flex-1 sm:flex-none px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                title="Buka menu bagikan bawaan ponsel/Android"
+              >
+                <Share2 size={13} />
+                <span>Bagikan</span>
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className="flex-1 sm:flex-none px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+              >
+                {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                <span>{copied ? 'Tersalin' : 'Copy Link'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Direct Social Media Share Buttons */}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EKSIS</string>
+    <string name="title_activity_main">EKSIS</string>
+    <string name="package_name">com.ghinan.eksis</string>
+    <string name="custom_url_scheme">com.ghinan.eksis</string>
+</resources>

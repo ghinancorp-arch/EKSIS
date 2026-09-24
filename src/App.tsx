@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { RoleSimulatorBar } from './components/common/RoleSimulatorBar';
 import { Navbar } from './components/common/Navbar';
@@ -19,14 +19,89 @@ import { CrowdfundingView } from './components/crowdfunding/CrowdfundingView';
 import { InvestorDashboard } from './components/crowdfunding/InvestorDashboard';
 import { TabunganAkhiratView } from './components/donation/TabunganAkhiratView';
 import { Product } from './types';
+import { initNativeFeatures } from './utils/capacitorBridge';
 
 const MainLayout: React.FC = () => {
-  const { currentView, searchQuery } = useApp();
+  const {
+    currentView,
+    setCurrentView,
+    searchQuery,
+    isCartOpen,
+    setIsCartOpen,
+    isCheckoutOpen,
+    setIsCheckoutOpen,
+    trackingOrderId,
+    setTrackingOrderId,
+    isAuthModalOpen,
+    setIsAuthModalOpen,
+  } = useApp();
 
   // Selected product states for modals
   const [selectedProductForDetail, setSelectedProductForDetail] = useState<Product | null>(null);
   const [selectedProductForMargin, setSelectedProductForMargin] = useState<Product | null>(null);
   const [isNotifDrawerOpen, setIsNotifDrawerOpen] = useState<boolean>(false);
+
+  // Inisialisasi fitur native Android (Back button, StatusBar)
+  useEffect(() => {
+    initNativeFeatures(() => {
+      // Prioritas 1: Tutup modal detail produk jika sedang terbuka
+      if (selectedProductForDetail) {
+        setSelectedProductForDetail(null);
+        return true;
+      }
+      // Prioritas 2: Tutup modal margin produk
+      if (selectedProductForMargin) {
+        setSelectedProductForMargin(null);
+        return true;
+      }
+      // Prioritas 3: Tutup drawer notifikasi
+      if (isNotifDrawerOpen) {
+        setIsNotifDrawerOpen(false);
+        return true;
+      }
+      // Prioritas 4: Tutup modal pelacakan resi
+      if (trackingOrderId) {
+        setTrackingOrderId(null);
+        return true;
+      }
+      // Prioritas 5: Tutup modal checkout
+      if (isCheckoutOpen) {
+        setIsCheckoutOpen(false);
+        return true;
+      }
+      // Prioritas 6: Tutup keranjang
+      if (isCartOpen) {
+        setIsCartOpen(false);
+        return true;
+      }
+      // Prioritas 7: Tutup modal auth
+      if (isAuthModalOpen) {
+        setIsAuthModalOpen(false);
+        return true;
+      }
+      // Prioritas 8: Jika bukan di halaman beranda, kembali ke beranda
+      if (currentView !== 'home') {
+        setCurrentView('home');
+        return true;
+      }
+      // Jika sudah di beranda dan tidak ada modal terbuka, biarkan default (keluar aplikasi)
+      return false;
+    });
+  }, [
+    selectedProductForDetail,
+    selectedProductForMargin,
+    isNotifDrawerOpen,
+    isCartOpen,
+    isCheckoutOpen,
+    trackingOrderId,
+    isAuthModalOpen,
+    currentView,
+    setCurrentView,
+    setIsCartOpen,
+    setIsCheckoutOpen,
+    setTrackingOrderId,
+    setIsAuthModalOpen,
+  ]);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100/60 text-slate-800 font-sans antialiased">

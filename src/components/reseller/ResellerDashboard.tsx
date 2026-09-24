@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatDateIndo, downloadCsvFile, generateWhatsAppShareText } from '../../utils/formatters';
+import { openExternalUrl, nativeShare } from '../../utils/capacitorBridge';
 import { Product } from '../../types';
 import {
   Store,
@@ -633,7 +634,7 @@ export const ResellerDashboard: React.FC<{
                       <button
                         onClick={() => {
                           const wa = `https://api.whatsapp.com/send?phone=${o.customerPhone.replace(/^0/, '62')}&text=Assalamu%27alaikum%20kak%20${encodeURIComponent(o.customerName)}%2C%20terima%20kasih%20telah%20berbelanja%20di%20${encodeURIComponent(profile.storeName)}.`;
-                          window.open(wa, '_blank');
+                          openExternalUrl(wa);
                         }}
                         className="px-2.5 py-1 bg-emerald-600 text-white rounded-md text-[11px] font-bold hover:bg-emerald-700 cursor-pointer inline-flex items-center gap-1"
                       >
@@ -680,17 +681,32 @@ export const ResellerDashboard: React.FC<{
                     {url}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => {
                         recordShareClick(p.id, 'whatsapp');
                         const msg = generateWhatsAppShareText(p.name, price, p.description, url);
-                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                        openExternalUrl(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
                       }}
                       className="py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <MessageCircle size={14} />
-                      <span>Share WA</span>
+                      <MessageCircle size={13} />
+                      <span>WA</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        recordShareClick(p.id, 'native_share');
+                        await nativeShare({
+                          title: p.name,
+                          text: generateWhatsAppShareText(p.name, price, p.description, url),
+                          url: url,
+                          dialogTitle: `Bagikan ${p.name}`,
+                        });
+                      }}
+                      className="py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <Share2 size={13} />
+                      <span>Bagikan</span>
                     </button>
                     <button
                       onClick={() => {
@@ -700,8 +716,8 @@ export const ResellerDashboard: React.FC<{
                       }}
                       className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <Copy size={14} />
-                      <span>Copy Link</span>
+                      <Copy size={13} />
+                      <span>Salin</span>
                     </button>
                   </div>
                 </div>
